@@ -177,7 +177,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
 
 </head>
 <body>
-<div class="app-title">Avocado Ibuprofen Paint 1.2</div>
+<div class="app-title">Avocado Ibuprofen Paint 1.3</div>
 <div class="container">
   <div class="toolbar">
     <div class="tool-group">
@@ -192,7 +192,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
       <h3>Brushes</h3>
       <div class="brush-selector">
         <div class="brush-btn active" data-brush="smooth">Simple Brush</div>
-        <div class="brush-btn" data-brush="soft">Soft Brush</div>
+        <div class="brush-btn" data-brush="soft">Dotted Brush</div>
         <div class="brush-btn" data-brush="texture">Circular Splatter</div>
         <div class="brush-btn" data-brush="scatter">Pixel Brush</div>
         <div class="brush-btn" data-brush="halftone">Solitaire Brush</div>
@@ -298,50 +298,83 @@ function updateBrushPreview() {
 
 // --- Brushes ---
 function drawSmooth(x, y) {
-  ctx.fillStyle = currentColor;
-  ctx.beginPath();
-  ctx.arc(x, y, currentBrushSize/2, 0, Math.PI*2);
-  ctx.fill();
+  const dx = x - lastX;
+  const dy = y - lastY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.ceil(distance / (currentBrushSize / 2));
+
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const ix = lastX + dx * t;
+    const iy = lastY + dy * t;
+
+    ctx.fillStyle = currentColor;
+    ctx.beginPath();
+    ctx.arc(ix, iy, currentBrushSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
+
 function drawSoft(x, y) {
-  const gradient = ctx.createRadialGradient(x, y, 0, x, y, currentBrushSize);
-  gradient.addColorStop(0, currentColor);
-  gradient.addColorStop(1, 'transparent');
-  ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.arc(x, y, currentBrushSize, 0, Math.PI*2);
-  ctx.fill();
+  const dx = x - lastX;
+  const dy = y - lastY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.ceil(distance / (currentBrushSize * 1.5)); // Fewer steps for a more distinct dotty effect
+
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const ix = lastX + dx * t;
+    const iy = lastY + dy * t;
+
+    // Simple dot with no gradient for clear circular dots
+    ctx.fillStyle = currentColor;
+    ctx.beginPath();
+    ctx.arc(ix, iy, currentBrushSize / 3, 0, Math.PI * 2); // Smaller dots for clearer "dotty" look
+    ctx.fill();
+  }
 }
+
+
 
 function drawTexture(x, y) {
   const r = currentBrushSize;
   const now = Date.now();
   let speed = 1;
+  
   if (lastX !== null && lastY !== null && lastTime !== null) {
     const dx = x - lastX, dy = y - lastY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const dt = Math.max(1, now - lastTime);
     speed = dist / dt * 10;
   }
-  const particleCount = Math.floor(r * 15 * (1 + speed));
-  const maxDist = r * (3 + speed * 2);
+
+  // Reduce particle count further to slow down the brush's coverage
+  const particleCount = Math.floor(r * 4 * (1 + speed * 0.2)); // Much fewer particles
+  const maxDist = r * 1.5;  // Limiting maximum distance particles can travel
+
   for (let i = 0; i < particleCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const dist = Math.pow(Math.random(), 0.5) * maxDist;
+    const dist = Math.pow(Math.random(), 0.7) * maxDist;  // Particle spread will be more compact
     const sx = x + Math.cos(angle) * dist;
     const sy = y + Math.sin(angle) * dist;
-    const size = Math.random() * (2 + speed * 2) + 2;
-    const color = Math.random() < 0.5 ? "black" : "white";
+
+    // Smaller size to reduce area coverage
+    const size = Math.random() * (1 + speed) + 0.5;  // Smaller particles
+
+    // More black particles and fewer white ones (80% black, 20% white)
+    const color = Math.random() < 0.8 ? "black" : "white";
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(sx, sy, size, 0, Math.PI * 2);
     ctx.fill();
   }
+
   lastX = x;
   lastY = y;
   lastTime = now;
 }
+
 
 function drawScatter(x, y) {
   // Pixel size now scales directly with the brush size
@@ -706,6 +739,21 @@ document.addEventListener('keydown', function (e) {
     case 'backspace': // Clear canvas
       e.preventDefault();
       clearCanvas();
+      break;
+  }
+
+  // Handle brush size with arrow keys
+  switch (e.key) {
+    case 'ArrowUp':
+      e.preventDefault();
+      brushSizeSlider.value = Math.min(200, parseInt(brushSizeSlider.value) + 10);
+      brushSizeSlider.dispatchEvent(new Event('input'));
+      break;
+
+    case 'ArrowDown':
+      e.preventDefault();
+      brushSizeSlider.value = Math.max(1, parseInt(brushSizeSlider.value) - 10);
+      brushSizeSlider.dispatchEvent(new Event('input'));
       break;
   }
 });

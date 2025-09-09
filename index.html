@@ -177,7 +177,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
 
 </head>
 <body>
-<div class="app-title">Avocado Ibuprofen Paint 1.1</div>
+<div class="app-title">Avocado Ibuprofen Paint 1.2</div>
 <div class="container">
   <div class="toolbar">
     <div class="tool-group">
@@ -224,10 +224,10 @@ label { font-weight: bold; font-size: 12px; color: #000; }
     <div class="tool-group">
       <h3>Actions</h3>
       <div class="actions">
-        <button onclick="undo()">Undo</button>
-        <button onclick="clearCanvas()">Clear Canvas</button>
-        <button onclick="invertAndThreshold()">Invert + Threshold</button>
-        <button onclick="saveImage()">Save PNG</button>
+        <button onclick="undo()">Undo (u)</button>
+        <button onclick="clearCanvas()">Clear Canvas (backspace)</button>
+        <button onclick="invertAndThreshold()">Invert + Threshold (i)</button>
+        <button onclick="saveImage()">Save PNG (s)</button>
       </div>
     </div>
   </div>
@@ -344,7 +344,8 @@ function drawTexture(x, y) {
 }
 
 function drawScatter(x, y) {
-  const pixelSize = Math.max(2, currentBrushSize / 5);
+  // Pixel size now scales directly with the brush size
+  const pixelSize = Math.max(2, currentBrushSize / 2); 
   const gridX = Math.floor(x / pixelSize) * pixelSize;
   const gridY = Math.floor(y / pixelSize) * pixelSize;
   const radius = currentBrushSize / 2;
@@ -358,6 +359,7 @@ function drawScatter(x, y) {
     }
   }
 }
+
 
 function drawHalftone(x, y) {
   if (drawHalftone.prevX === undefined || drawHalftone.prevY === undefined) {
@@ -414,7 +416,9 @@ function drawGlitch(x, y) {
 
 function drawPixel(x, y) {
   const size = currentBrushSize;
-  const chunk = 4;
+  // Make pixel blocks scale with brush size (minimum 2px so they're always visible)
+  const chunk = Math.max(2, Math.floor(size / 4));
+
   for (let i = 0; i < size; i += chunk) {
     for (let j = 0; j < size; j += chunk) {
       const color = Math.random() < 0.5 ? "#000000" : "#FFFFFF";
@@ -423,6 +427,7 @@ function drawPixel(x, y) {
     }
   }
 }
+
 
 function drawSpiral(x, y) {
   const r = currentBrushSize * 2;
@@ -677,6 +682,35 @@ function saveImage() {
   a.href = canvas.toDataURL(); 
   a.click(); 
 }
+// --- Keyboard Shortcuts (single letters) ---
+document.addEventListener('keydown', function (e) {
+  // Ignore if typing in an input/textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  switch (e.key.toLowerCase()) {
+    case 'u': // Undo
+      e.preventDefault();
+      undo();
+      break;
+
+    case 's': // Save
+      e.preventDefault();
+      saveImage();
+      break;
+
+    case 'i': // Invert
+      e.preventDefault();
+      invertAndThreshold();
+      break;
+
+    case 'backspace': // Clear canvas
+      e.preventDefault();
+      clearCanvas();
+      break;
+  }
+});
+
+
 
 updateBrushPreview();
 </script>

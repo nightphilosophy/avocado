@@ -35,10 +35,10 @@ body {
   background: #fff;               /* white background */
   border: 2px solid #000;        /* black border */
   color: #000;                    /* all text black */
-  padding: 20px;
+  padding: 10px;
   border-radius: 0px;
   width: 250px;                   /* fixed width */
-  height: 1020px;                 /* match canvas height */
+  height: 1030px;                 /* match canvas height */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -177,7 +177,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
 
 </head>
 <body>
-<div class="app-title">Avocado Ibuprofen Paint 1.33</div>
+<div class="app-title">Avocado Ibuprofen Paint 1.35</div>
 <div class="container">
   <div class="toolbar">
     <div class="tool-group">
@@ -226,7 +226,9 @@ label { font-weight: bold; font-size: 12px; color: #000; }
       <div class="actions">
         <button onclick="undo()">Undo (u)</button>
         <button onclick="clearCanvas()">Clear Canvas (backspace)</button>
+        <button onclick="importImage()">Import Image</button>
         <button onclick="invertAndThreshold()">Invert + Threshold (i)</button>
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
         <button onclick="saveImage()">Save PNG (s)</button>
       </div>
     </div>
@@ -601,15 +603,54 @@ function drawRipple(x, y) {
 
 
 function drawSmear(x, y) {
-  if (!lastX || !lastY) return;
-  const dx = x - lastX, dy = y - lastY;
+  if (lastX == null || lastY == null) return;
+
+  const dx = x - lastX;
+  const dy = y - lastY;
   const len = Math.sqrt(dx * dx + dy * dy);
   const steps = Math.max(4, len / 2);
-  const img = ctx.getImageData(lastX, lastY, dx || 1, dy || 1);
+
+  const sampleWidth = Math.max(1, Math.abs(dx));
+  const sampleHeight = Math.max(1, Math.abs(dy));
+  const sx = Math.floor(lastX);
+  const sy = Math.floor(lastY);
+
+  // Get a narrow strip from the last position
+  const img = ctx.getImageData(sx, sy, sampleWidth, sampleHeight);
+
+  // Modify the pixel data to remove gray & enforce black/white
+  const data = img.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+    const isWhite = avg > 128;
+    data[i] = data[i+1] = data[i+2] = isWhite ? 255 : 0; // Binarize
+    data[i+3] = 255; // Fully opaque
+  }
+
+  // Store modified version in temp canvas once
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = sampleWidth;
+  tempCanvas.height = sampleHeight;
+  const tempCtx = tempCanvas.getContext("2d");
+  tempCtx.putImageData(img, 0, 0);
+
   for (let i = 0; i < steps; i++) {
-    ctx.putImageData(img, lastX + dx * (i / steps), lastY + dy * (i / steps));
+    const t = i / steps;
+
+    let px = lastX + dx * t;
+    let py = lastY + dy * t;
+
+    // Chaotic jitter — increase for more glitch
+    const jitter = 3;
+    px += (Math.random() - 0.5) * jitter;
+    py += (Math.random() - 0.5) * jitter;
+
+    // No alpha, no flipping = bolder marks
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(tempCanvas, px, py);
   }
 }
+
 
 function drawBucket(x, y) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -833,6 +874,57 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
+function importImage() {
+  document.getElementById('imageInput').click();
+}
+
+document.getElementById('imageInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      // Draw image scaled to canvas
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+
+      // Draw image scaled to fit canvas
+      tempCtx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Get image data and apply halftone
+      const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const dotSpacing = 6;
+      const dotSize = 3;
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height); // Clear canvas first
+
+      for (let y = 0; y < canvas.height; y += dotSpacing) {
+        for (let x = 0; x < canvas.width; x += dotSpacing) {
+          const idx = (y * canvas.width + x) * 4;
+          const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+          const brightness = 0.3 * r + 0.6 * g + 0.1 * b;
+
+          const radius = (1 - brightness / 255) * dotSize;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fillStyle = '#000';
+          ctx.fill();
+        }
+      }
+
+      saveState(); // Allow undo
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 
 updateBrushPreview();

@@ -6,11 +6,11 @@
   <title>Avocado Ibuprofen Paint</title>
 <style>
 /* General page setup */
-body { 
-  margin: 0; 
-  padding: 20px; 
-  font-family: Arial, sans-serif; 
-  background: #f0f0f0; 
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
 }
 
 /* App title */
@@ -30,8 +30,8 @@ body {
   justify-content: flex-start; /* align to left */
 }
 
-/* Toolbar styling */
-.toolbar { 
+/* Left Toolbar styling */
+.toolbar {
   background: #fff;               /* white background */
   border: 2px solid #000;        /* black border */
   color: #000;                    /* all text black */
@@ -45,16 +45,28 @@ body {
   box-sizing: border-box;
 }
 
-/* Removed logo box */
-.toolbar .logo {
-  display: none; /* no longer needed */
+/* Right Toolbar styling */
+.right-toolbar {
+  background: #fff;
+  border: 2px solid #000;
+  color: #000;
+  padding: 10px;
+  border-radius: 0px;
+  width: 60px; /* Narrower width for single-symbol tools */
+  height: 260px; /* Match canvas height */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 /* Tool groups minimal styling */
 .tool-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px; /* Reduced gap to bring symbols closer */
 }
 
 .tool-group h3 {
@@ -132,9 +144,9 @@ body {
   border-radius: 3px;
 }
 
-.brush-dot { 
+.brush-dot {
   background: #000;
-  border-radius: 50%; 
+  border-radius: 50%;
 }
 
 /* Action buttons */
@@ -144,7 +156,7 @@ body {
   gap: 8px;
 }
 
-button { 
+button {
   padding: 5px 8px;
   border: 2px solid #000;
   background: #000;
@@ -157,15 +169,39 @@ button {
 
 button:hover { background: #f0f0f0; }
 
+/* New symbol tool buttons */
+.symbol-tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 2px solid #000; /* Added light border */
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.symbol-tool:hover {
+  background: #e6e6e6;
+}
+
+.symbol-tool.active {
+  background: #e6e6e6;
+  border: 2px solid #000; /* Made active border more prominent */
+}
+
 /* Canvas container */
 .canvas-container {
-  border: 2px solid #333; 
+  border: 2px solid #333;
   flex: 0 0 auto;   /* do not grow/shrink */
 }
 
-#canvas { 
-  display: block; 
-  cursor: crosshair; 
+#canvas {
+  display: block;
+  cursor: crosshair;
   width: 1080px;
   height: 1080px;
 }
@@ -173,12 +209,21 @@ button:hover { background: #f0f0f0; }
 /* Range input styling */
 input[type="range"] { width: 150px; }
 label { font-weight: bold; font-size: 12px; color: #000; }
+
+.user-note {
+  font-size: 12px;
+  color: #000;
+  font-family: Arial, sans-serif;
+  text-align: left;
+  margin-top: 20px;
+}
 </style>
 
 </head>
 <body>
-<div class="app-title">Avocado Ibuprofen Paint 1.35</div>
+<div class="app-title">Avocado Ibuprofen Paint 1.39</div>
 <div class="container">
+  <!-- Existing Left Toolbar -->
   <div class="toolbar">
     <div class="tool-group">
       <h3>Colors</h3>
@@ -187,7 +232,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
         <div class="color-btn white" data-color="#ffffff" title="White"></div>
       </div>
     </div>
-    
+
     <div class="tool-group">
       <h3>Brushes</h3>
       <div class="brush-selector">
@@ -209,7 +254,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
         <div class="brush-btn" data-brush="bucketHalf">Halftone Brush</div>
       </div>
     </div>
-    
+
     <div class="tool-group">
       <h3>Brush Size (⬆, ⬇)</h3>
       <div class="brush-size">
@@ -220,7 +265,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
         <label id="sizeLabel">Size: 10</label>
       </div>
     </div>
-    
+
     <div class="tool-group">
       <h3>Actions</h3>
       <div class="actions">
@@ -232,13 +277,27 @@ label { font-weight: bold; font-size: 12px; color: #000; }
         <button onclick="saveImage()">Save PNG (s)</button>
       </div>
     </div>
+  <div class="user-note">
+  Please post your images on instagram or bluesky with the hashtag #avocadopaint – I'd love to see what you made!
   </div>
-  
+  </div>
+
   <div class="canvas-container">
     <canvas id="canvas" width="1080" height="1080"></canvas>
   </div>
-</div>
 
+  <!-- New Right Toolbar -->
+  <div class="right-toolbar">
+    <div class="tool-group">
+      <div class="symbol-tool" data-tool="socrates" title="Socrates">⚙</div>
+      <div class="symbol-tool" data-tool="plato" title="Plato">◘</div>
+      <div class="symbol-tool" data-tool="aristotle" title="Aristotle">⌘</div>
+      <div class="symbol-tool" data-tool="descartes" title="Descartes">⏼</div>
+      <div class="symbol-tool" data-tool="nietzsche" title="Nietzsche">▓</div>
+    </div>
+  </div>  
+
+</div>
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -277,12 +336,27 @@ document.querySelectorAll('.color-btn').forEach(btn => {
   });
 });
 
-// Brush buttons
+// Brush buttons (left toolbar)
 document.querySelectorAll('.brush-btn').forEach(btn => {
   btn.addEventListener('click', function() {
-    document.querySelector('.brush-btn.active').classList.remove('active');
+    // Remove active state from all brush buttons and symbol tools
+    document.querySelectorAll('.brush-btn.active').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.symbol-tool.active').forEach(b => b.classList.remove('active'));
+    
     this.classList.add('active');
     currentBrush = this.dataset.brush;
+  });
+});
+
+// Symbol tool buttons (right toolbar)
+document.querySelectorAll('.symbol-tool').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Remove active state from all brush buttons and symbol tools
+    document.querySelectorAll('.brush-btn.active').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.symbol-tool.active').forEach(b => b.classList.remove('active'));
+    
+    this.classList.add('active');
+    currentBrush = this.dataset.tool;
   });
 });
 
@@ -343,30 +417,64 @@ function drawTexture(x, y) {
   const r = currentBrushSize;
   const now = Date.now();
   let speed = 1;
-  
+  let dx = 0, dy = 0;
+
   if (lastX !== null && lastY !== null && lastTime !== null) {
-    const dx = x - lastX, dy = y - lastY;
+    dx = x - lastX;
+    dy = y - lastY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const dt = Math.max(1, now - lastTime);
     speed = dist / dt * 10;
   }
 
-  // Reduce particle count further to slow down the brush's coverage
-  const particleCount = Math.floor(r * 4 * (1 + speed * 0.2)); // Much fewer particles
-  const maxDist = r * 1.5;  // Limiting maximum distance particles can travel
+  const direction = Math.atan2(dy, dx);
+  const speedFactor = Math.min(speed, 10); // cap speed to avoid chaos overload
+  const baseCount = r * 3;
+  const particleCount = Math.min(180, Math.floor(baseCount * (1 + speedFactor * 0.3)));
 
+  const maxDist = r * (1 + speedFactor * 0.5);
+  
   for (let i = 0; i < particleCount; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.pow(Math.random(), 0.7) * maxDist;  // Particle spread will be more compact
-    const sx = x + Math.cos(angle) * dist;
-    const sy = y + Math.sin(angle) * dist;
+    let angle = direction + (Math.random() - 0.5) * Math.PI; // biased toward movement direction
+    const chaos = Math.random();
 
-    // Smaller size to reduce area coverage
-    const size = Math.random() * (1 + speed) + 0.5;  // Smaller particles
+    // Distances: closer if slow, wilder if fast
+    const dist = Math.pow(Math.random(), 0.5) * maxDist;
 
-    // More black particles and fewer white ones (80% black, 20% white)
-    const color = Math.random() < 0.8 ? "black" : "white";
-    ctx.fillStyle = color;
+    let sx = x + Math.cos(angle) * dist;
+    let sy = y + Math.sin(angle) * dist;
+
+    // Occasionally throw particles BEHIND the movement
+    if (chaos > 0.95) {
+      const reverseAngle = direction + Math.PI + (Math.random() - 0.5) * 0.5;
+      const backDist = Math.random() * r * 0.5;
+      sx = x + Math.cos(reverseAngle) * backDist;
+      sy = y + Math.sin(reverseAngle) * backDist;
+    }
+
+    // Particle size: random, but gets bigger with speed
+    let size = Math.pow(Math.random(), 0.8) * (r * 0.25 + speedFactor * 0.4) + 0.3;
+
+    // Occasionally make a big splat
+    if (chaos < 0.03) size *= 3;
+
+    // Occasionally sharp line particle
+    if (chaos < 0.015) {
+      const lineLength = Math.random() * 8 + 4;
+      const lineAngle = angle + (Math.random() - 0.5) * 0.3;
+      const ex = sx + Math.cos(lineAngle) * lineLength;
+      const ey = sy + Math.sin(lineAngle) * lineLength;
+      ctx.strokeStyle = Math.random() < 0.5 ? "#000" : "#FFF";
+      ctx.lineWidth = Math.random() * 2 + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+      continue; // skip arc for this one
+    }
+
+    // Black or white particles only
+    ctx.fillStyle = Math.random() < 0.5 ? "#000000" : "#FFFFFF";
     ctx.beginPath();
     ctx.arc(sx, sy, size, 0, Math.PI * 2);
     ctx.fill();
@@ -378,22 +486,30 @@ function drawTexture(x, y) {
 }
 
 
+
 function drawScatter(x, y) {
-  // Pixel size now scales directly with the brush size
-  const pixelSize = Math.max(2, currentBrushSize / 2); 
+  const pixelSize = Math.max(2, currentBrushSize / 3); // slightly smaller pixels = denser coverage
+  const radius = currentBrushSize / 2;
+
+  // Align to pixel grid
   const gridX = Math.floor(x / pixelSize) * pixelSize;
   const gridY = Math.floor(y / pixelSize) * pixelSize;
-  const radius = currentBrushSize / 2;
-  
-  for (let px = gridX - radius; px < gridX + radius; px += pixelSize) {
-    for (let py = gridY - radius; py < gridY + radius; py += pixelSize) {
-      if ((px - x) * (px - x) + (py - y) * (py - y) <= radius * radius) {
+
+  for (let px = gridX - radius; px <= gridX + radius; px += pixelSize) {
+    for (let py = gridY - radius; py <= gridY + radius; py += pixelSize) {
+      const dx = px - x;
+      const dy = py - y;
+
+      // Only draw inside a circle (for round brush shape)
+      if (dx * dx + dy * dy <= radius * radius) {
         ctx.fillStyle = currentColor;
         ctx.fillRect(px, py, pixelSize, pixelSize);
       }
     }
   }
 }
+
+
 
 
 function drawHalftone(x, y) {
@@ -411,8 +527,8 @@ function drawHalftone(x, y) {
     const px = drawHalftone.prevX + dx * t;
     const py = drawHalftone.prevY + dy * t;
     const jitter = Math.random() * (dist / 3 + 1);
-    const jx = px + (Math.random() - 0.5) * jitter;
-    const jy = py + (Math.random() - 0.5) * jitter;
+    const jx = px + (Math.random() - 0.5) * jitter - currentBrushSize / 2;
+    const jy = py + (Math.random() - 0.5) * jitter - currentBrushSize / 2;
     const color = Math.random() < 0.5 ? "#000000" : "#FFFFFF";
     ctx.fillStyle = color;
     ctx.fillRect(jx, jy, currentBrushSize, currentBrushSize);
@@ -420,6 +536,7 @@ function drawHalftone(x, y) {
   drawHalftone.prevX = x;
   drawHalftone.prevY = y;
 }
+
 
 function resetHalftone() {
   drawHalftone.prevX = undefined;
@@ -451,17 +568,22 @@ function drawGlitch(x, y) {
 
 function drawPixel(x, y) {
   const size = currentBrushSize;
-  // Make pixel blocks scale with brush size (minimum 2px so they're always visible)
   const chunk = Math.max(2, Math.floor(size / 4));
+
+  // Offset to center the brush around the cursor
+  const offset = Math.floor(size / 2);
+  const startX = x - offset;
+  const startY = y - offset;
 
   for (let i = 0; i < size; i += chunk) {
     for (let j = 0; j < size; j += chunk) {
       const color = Math.random() < 0.5 ? "#000000" : "#FFFFFF";
       ctx.fillStyle = color;
-      ctx.fillRect(x + i, y + j, chunk, chunk);
+      ctx.fillRect(startX + i, startY + j, chunk, chunk);
     }
   }
 }
+
 
 
 function drawSpiral(x, y) {
@@ -766,6 +888,12 @@ function draw(e) {
     case 'smear': drawSmear(x, y); break;
     case 'bucket': drawBucket(x, y); break;
     case 'bucketHalf': drawBucketHalf(x, y); break;
+    case 'socrates': socrates(e); break;
+    case 'plato': plato(x, y); break;
+    case 'aristotle': aristotle(x, y); break;
+    case 'descartes': descartes(e); break;
+    case 'nietzsche': Nietzsche(x, y); break;
+    case 'camus': /* add camus function logic here */ break;
   }
   lastX = x; 
   lastY = y;
@@ -925,6 +1053,344 @@ document.getElementById('imageInput').addEventListener('change', function(e) {
   };
   reader.readAsDataURL(file);
 });
+
+// right hand side
+
+function socrates(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const numLines = currentBrushSize * 20;
+
+    ctx.globalCompositeOperation = 'source-over';
+    
+    for (let i = 0; i < numLines; i++) {
+        // More variety in line length and width for a truly spiky look
+        const lineHeight = Math.random() * (currentBrushSize * 3) + 5; 
+        const lineWidth = Math.random() * 3 + 0.5;
+
+        // The line color now uses the global currentColor variable
+        const lineColor = currentColor;
+        ctx.strokeStyle = lineColor; 
+        ctx.lineWidth = lineWidth;
+        ctx.globalAlpha = 1;
+
+        // Random rotation for each line
+        const rotation = Math.random() * Math.PI * 2; 
+
+        ctx.save();
+        ctx.translate(x, y); 
+        ctx.rotate(rotation); 
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0); 
+        ctx.lineTo(0, lineHeight); 
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+
+function plato(x, y) {
+  const glitchSize = currentBrushSize * (0.8 + Math.random() * 1.2);
+  const fragments = 20 + Math.floor(Math.random() * 30); // many fragments
+
+  for (let i = 0; i < fragments; i++) {
+    const offsetX = (Math.random() - 0.5) * glitchSize * 4;
+    const offsetY = (Math.random() - 0.5) * glitchSize * 4;
+    const angle = Math.random() * Math.PI * 2;
+
+    ctx.save();
+    ctx.translate(x + offsetX, y + offsetY);
+    ctx.rotate(angle);
+
+    ctx.fillStyle = currentColor;
+    ctx.strokeStyle = currentColor;
+    ctx.globalCompositeOperation = "source-over";
+
+    const shapeType = Math.floor(Math.random() * 5);
+
+    if (shapeType === 0) {
+      // Solid square
+      const size = glitchSize * (0.4 + Math.random() * 0.6);
+      ctx.fillRect(-size / 2, -size / 2, size, size);
+    } else if (shapeType === 1) {
+      // Tall/flat rectangle
+      const w = glitchSize * (0.2 + Math.random() * 0.6);
+      const h = glitchSize * (0.6 + Math.random() * 1.0);
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+    } else if (shapeType === 2) {
+      // Hollow box
+      const size = glitchSize * (0.5 + Math.random() * 0.5);
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-size / 2, -size / 2, size, size);
+    } else if (shapeType === 3) {
+      // Rotated diamond
+      const size = glitchSize * (0.4 + Math.random() * 0.6);
+      ctx.beginPath();
+      ctx.moveTo(0, -size / 2);
+      ctx.lineTo(size / 2, 0);
+      ctx.lineTo(0, size / 2);
+      ctx.lineTo(-size / 2, 0);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // Sharp angled triangle
+      const base = glitchSize * (0.3 + Math.random() * 0.7);
+      const height = glitchSize * (0.4 + Math.random() * 0.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -height / 2);
+      ctx.lineTo(base / 2, height / 2);
+      ctx.lineTo(-base / 2, height / 2);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // Occasional chaotic spray of tiny geometric fragments
+  if (Math.random() > 0.8) {
+    ctx.fillStyle = currentColor;
+    const tinyCount = 30 + Math.floor(Math.random() * 30);
+    for (let i = 0; i < tinyCount; i++) {
+      const size = 1 + Math.random() * 4;
+      ctx.fillRect(
+        x + (Math.random() - 0.5) * glitchSize * 6,
+        y + (Math.random() - 0.5) * glitchSize * 6,
+        size,
+        size
+      );
+    }
+  }
+
+  ctx.globalCompositeOperation = "source-over";
+}
+
+
+function aristotle(x, y) {
+  const r = currentBrushSize * 2;
+  const img = ctx.getImageData(x - r, y - r, r * 2, r * 2);
+  const data = img.data;
+
+  const w = img.width;
+  const h = img.height;
+
+  // --- compute speed (self-contained memory) ---
+  const now = performance.now();
+  let speed = 0;
+  if (aristotle.lastX !== undefined) {
+    const dx = x - aristotle.lastX;
+    const dy = y - aristotle.lastY;
+    const dist = Math.hypot(dx, dy);
+    const dt = now - aristotle.lastTime;
+    speed = dt > 0 ? dist / dt : 0;
+  }
+  aristotle.lastX = x;
+  aristotle.lastY = y;
+  aristotle.lastTime = now;
+
+  const normSpeed = Math.min(1, speed / 2.0);
+
+  // helper: binarize pixel to black/white
+  function bwify(idx) {
+    const avg = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+    const val = avg > 128 ? 255 : 0;
+    data[idx] = data[idx + 1] = data[idx + 2] = val;
+  }
+
+  // convert to B/W first
+  for (let i = 0; i < data.length; i += 4) {
+    bwify(i);
+  }
+
+  for (let px = 0; px < w; px++) {
+    if (Math.random() < 0.15 + normSpeed * 0.4) {
+      const shiftY = Math.floor((Math.random() - 0.5) * (30 + normSpeed * 80));
+      const shiftX = Math.random() < 0.1 + normSpeed * 0.2
+        ? Math.floor((Math.random() - 0.5) * 20)
+        : 0;
+      for (let py = 0; py < h; py++) {
+        const idx = (py * w + px) * 4;
+        const sy = Math.min(h - 1, Math.max(0, py + shiftY));
+        const sx = Math.min(w - 1, Math.max(0, px + shiftX));
+        const sidx = (sy * w + sx) * 4;
+        data[idx] = data[idx + 1] = data[idx + 2] = data[sidx];
+      }
+    }
+
+    if (Math.random() < 0.1 + normSpeed * 0.3) {
+      const streakLen = 5 + Math.floor(Math.random() * (20 + normSpeed * 60));
+      for (let py = 0; py < h - streakLen; py++) {
+        const idx = (py * w + px) * 4;
+        const sidx = ((py + streakLen) * w + px) * 4;
+        data[idx] = data[idx + 1] = data[idx + 2] = data[sidx];
+      }
+    }
+
+    if (Math.random() < 0.05 + normSpeed * 0.2) {
+      for (let py = 0; py < h; py++) {
+        const idx = (py * w + px) * 4;
+        const val = data[idx] > 128 ? 0 : 255;
+        data[idx] = data[idx + 1] = data[idx + 2] = val;
+      }
+    }
+
+    if (Math.random() < 0.04 + normSpeed * 0.15) {
+      for (let py = 0; py < h; py++) {
+        const idx = (py * w + px) * 4;
+        if (Math.random() < 0.3 + normSpeed * 0.4) {
+          const val = Math.random() < 0.5 ? 0 : 255;
+          data[idx] = data[idx + 1] = data[idx + 2] = val;
+        }
+      }
+    }
+  }
+
+  if (Math.random() < 0.1 + normSpeed * 0.3) {
+    const stripWidth = 3 + Math.floor(Math.random() * (10 + normSpeed * 20));
+    const srcX = Math.floor(Math.random() * (w - stripWidth));
+    const dstX = Math.floor(Math.random() * (w - stripWidth));
+    for (let py = 0; py < h; py++) {
+      for (let dx = 0; dx < stripWidth; dx++) {
+        const srcIdx = (py * w + (srcX + dx)) * 4;
+        const dstIdx = (py * w + (dstX + dx)) * 4;
+        data[dstIdx] = data[dstIdx + 1] = data[dstIdx + 2] = data[srcIdx];
+      }
+    }
+  }
+
+  if (Math.random() < 0.03 + normSpeed * 0.1) {
+    const cx = w / 2;
+    const cy = h / 2;
+    const swirlStrength = (0.2 + Math.random() * 0.6) * (1 + normSpeed * 2);
+
+    const copy = new Uint8ClampedArray(data);
+    for (let py = 0; py < h; py++) {
+      for (let px2 = 0; px2 < w; px2++) {
+        const dx = px2 - cx;
+        const dy = py - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx) + swirlStrength * Math.exp(-dist / 25);
+
+        const sx = Math.floor(cx + dist * Math.cos(angle));
+        const sy = Math.floor(cy + dist * Math.sin(angle));
+
+        if (sx >= 0 && sx < w && sy >= 0 && sy < h) {
+          const idx = (py * w + px2) * 4;
+          const sidx = (sy * w + sx) * 4;
+          data[idx] = data[idx + 1] = data[idx + 2] = copy[sidx];
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(img, x - r, y - r);
+}
+
+
+
+function descartes(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    // initialize last position/time if not set
+    if (descartes.lastX === undefined || descartes.lastY === undefined) {
+        descartes.lastX = x;
+        descartes.lastY = y;
+        descartes.lastTime = performance.now();
+        return;
+    }
+
+    // direction vector
+    const dx = x - descartes.lastX;
+    const dy = y - descartes.lastY;
+    const dist = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+
+    // speed (px per ms)
+    const now = performance.now();
+    const dt = now - descartes.lastTime;
+    const speed = dt > 0 ? dist / dt : 0;
+
+    // update last position/time
+    descartes.lastX = x;
+    descartes.lastY = y;
+    descartes.lastTime = now;
+
+    // brush parameters with speed influence
+    const steps = 40;
+    const amplitude = currentBrushSize * (1 + speed * 0.2); // taller when faster
+    const frequency = 2 + speed * 0.05; // more cycles when faster
+    const sharpness = 3;
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 1;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    ctx.beginPath();
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const raw = Math.sin(t * Math.PI * 2 * frequency);
+        const s = Math.sign(raw) * Math.pow(Math.abs(raw), sharpness);
+        const px = (t - 0.5) * currentBrushSize * 20;
+        const py = s * amplitude;
+
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+
+function Nietzsche(x, y) {
+  const r = currentBrushSize * 4; // half the side length
+  const size = r * 2;
+
+  // create an offscreen pattern canvas
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = size;
+  patternCanvas.height = size;
+  const pctx = patternCanvas.getContext("2d");
+
+  // make spacing scale with brush size
+  const spacing = Math.max(4, currentBrushSize * 2);
+  pctx.fillStyle = "#fff";
+  pctx.fillRect(0, 0, size, size);
+  pctx.strokeStyle = "#000";
+  pctx.lineWidth = Math.max(1, currentBrushSize * 0.2);
+
+  // draw diagonals for chain-link pattern
+  for (let i = -size; i < size * 2; i += spacing) {
+    pctx.beginPath();
+    pctx.moveTo(i, 0);
+    pctx.lineTo(i + size, size);
+    pctx.stroke();
+
+    pctx.beginPath();
+    pctx.moveTo(i, size);
+    pctx.lineTo(i + size, 0);
+    pctx.stroke();
+  }
+
+  // turn it into a repeating pattern
+  const pattern = ctx.createPattern(patternCanvas, "repeat");
+
+  // fill a square onto the main canvas at brush location
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = pattern;
+  ctx.fillRect(x - r, y - r, size, size);
+  ctx.restore();
+}
 
 
 updateBrushPreview();

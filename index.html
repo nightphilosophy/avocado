@@ -221,7 +221,7 @@ label { font-weight: bold; font-size: 12px; color: #000; }
 
 </head>
 <body>
-<div class="app-title">Avocado Ibuprofen Paint 1.39</div>
+<div class="app-title">Avocado Ibuprofen Paint</div>
 <div class="container">
   <!-- Existing Left Toolbar -->
   <div class="toolbar">
@@ -544,16 +544,43 @@ function resetHalftone() {
 }
 
 function drawNoise(x, y) {
-  const glitchWidth = currentBrushSize;
-  const glitchHeight = 2;
-  for (let i = 0; i < 5; i++) {
-    const offsetX = (Math.random() - 0.5) * 20;
-    const offsetY = (Math.random() - 0.5) * 20;
+  const baseWidth = currentBrushSize;
+  // scale height slower: grows with sqrt so it feels more subtle
+  const baseHeight = Math.max(2, Math.sqrt(currentBrushSize) * 0.8);
+  const layers = 5;
+
+  for (let i = 0; i < layers; i++) {
+    // offsets also grow slower (half the brush size instead of full)
+    const offsetX = (Math.random() - 0.5) * (currentBrushSize * 0.5);
+    const offsetY = (Math.random() - 0.5) * (currentBrushSize * 0.5);
+
+    // widths scale but with smaller randomness
+    const width1 = baseWidth + Math.random() * (baseWidth * 0.15);
+    const height1 = baseHeight;
+
+    const width2 = Math.random() * (baseWidth * 0.6);
+    const height2 = baseHeight;
+
     ctx.fillStyle = currentColor;
-    ctx.fillRect(x + offsetX, y + offsetY, glitchWidth + Math.random() * 10, glitchHeight);
-    ctx.fillRect(x + offsetX, y + offsetY + 5, Math.random() * glitchWidth, glitchHeight);
+
+    // Center first rectangle
+    ctx.fillRect(
+      x + offsetX - width1 / 2,
+      y + offsetY - height1 / 2,
+      width1,
+      height1
+    );
+
+    // Center second rectangle (below first)
+    ctx.fillRect(
+      x + offsetX - width2 / 2,
+      y + offsetY + baseHeight - height2 / 2,
+      width2,
+      height2
+    );
   }
 }
+
 
 function drawGlitch(x, y) {
   ctx.strokeStyle = currentColor;
@@ -953,12 +980,17 @@ function saveImage() {
   // Put processed image back into temp canvas
   tempCtx.putImageData(img, 0, 0);
 
+  // Generate unique filename
+  const uniqueId = Date.now(); // timestamp ensures uniqueness
+  const filename = `AvocadoPaint_${uniqueId}.png`;
+
   // Save as PNG
   const a = document.createElement('a');
-  a.download = 'drawing.png';
+  a.download = filename;
   a.href = tempCanvas.toDataURL();
   a.click();
 }
+
 // --- Keyboard Shortcuts (single letters) ---
 document.addEventListener('keydown', function (e) {
   // Ignore if typing in an input/textarea

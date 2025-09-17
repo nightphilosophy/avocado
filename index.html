@@ -1320,6 +1320,25 @@ function descartes(e) {
 
     ctx.restore();
 }
+function rotateCanvas() {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Save current drawing
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Rotate canvas by 90 degrees
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(Math.PI / 2); // 90° clockwise
+    ctx.drawImage(tempCanvas, -canvas.width / 2, -canvas.height / 2);
+    ctx.restore();
+}
 
 
 function Nietzsche(x, y) {

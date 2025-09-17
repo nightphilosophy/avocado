@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Avocado Ibuprofen Paint</title>
 <style>
-/* General setup */
+/* --- General Setup --- */
 body {
   margin: 0;
   padding: 20px;
@@ -21,6 +21,7 @@ body {
   margin-bottom: 5px;
 }
 
+/* --- Layout Containers --- */
 .container {
   display: flex;
   gap: 10px;
@@ -40,41 +41,58 @@ body {
   box-sizing: border-box;
 }
 
-.tool-group { display: flex; flex-direction: column; gap: 10px; }
-.tool-group h3 { margin: 0; font-size: 14px; color: #000; }
+.tool-group { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+}
 
-/* Colors */
-.color-section { display: flex; gap: 10px; align-items: center; }
+.tool-group h3 { 
+  margin: 0; 
+  font-size: 14px; 
+  color: #000; 
+}
+
+/* --- Color Buttons --- */
+.color-section { 
+  display: flex; 
+  gap: 10px; 
+  align-items: center; 
+}
+
 .color-btn {
-  width: 30px; height: 30px;
+  width: 30px; 
+  height: 30px;
   border: 2px solid #000;
-  cursor: pointer; border-radius: 3px;
+  cursor: pointer; 
+  border-radius: 3px;
 }
 .color-btn.active { border-width: 3px; }
-.black { background: #000; } .white { background: #fff; }
 
-/* Unified grid for all tools */
+.black { background: #000; } 
+.white { background: #fff; }
+
+/* --- Tool Buttons --- */
 .tool-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
-/* Tool button styling */
 .brush-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 22px;        /* slightly smaller symbol */
+  font-size: 22px;
   cursor: pointer;
   transition: background 0.2s;
   border: 2px solid #000;
   border-radius: 3px;
-  width: 48px;            /* tighter size */
-  height: 48px;           /* less negative space */
+  width: 48px;
+  height: 48px;
   text-align: center;
-  gap: 1px;               /* less gap between icon/text */
+  gap: 1px;
   padding: 2px;
 }
 
@@ -84,22 +102,32 @@ body {
   line-height: 1.1;
 }
 
-.brush-btn:hover { background: #e6e6e6; }
-.brush-btn.active { background: #e6e6e6; }
+.brush-btn:hover, .brush-btn.active {
+  background: #e6e6e6;
+}
 
-/* Brush size */
+/* --- Brush Size --- */
 .brush-size { display: flex; flex-direction: column; gap: 10px; }
+
 .size-controls { display: flex; align-items: center; gap: 10px; }
+
 .brush-preview {
-  width: 40px; height: 40px;
+  width: 40px; 
+  height: 40px;
   border: 1px solid #000;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
   border-radius: 3px;
 }
-.brush-dot { background: #000; border-radius: 50%; }
+.brush-dot { 
+  background: #000; 
+  border-radius: 50%; 
+}
 
-/* Actions */
+/* --- Action Buttons --- */
 .actions { display: flex; flex-direction: column; gap: 8px; }
+
 button {
   padding: 5px 8px;
   border: 2px solid #000;
@@ -110,17 +138,37 @@ button {
   font-size: 12px;
   transition: background 0.2s;
 }
-button:hover { background: #f0f0f0; color: #000; }
 
-/* Canvas */
-.canvas-container { border: 2px solid #333; flex: 0 0 auto; }
-#canvas { display: block; cursor: crosshair; width: 1080px; height: 1080px; }
+button:hover {
+  background: #f0f0f0; 
+  color: #000;
+}
 
+/* --- Canvas Container & Canvas --- */
+.canvas-container {
+  border: 2px solid #333;
+  display: inline-block;        /* shrink-wrap container */
+  padding: 0;                   /* no extra spacing */
+  line-height: 0;               /* remove vertical gap under canvas */
+  box-sizing: content-box;      /* border doesn’t affect inner canvas size */
+}
+
+#canvas {
+  display: block;
+  cursor: crosshair;
+  width: 100%;                  /* fill container exactly */
+  height: 100%;
+}
+
+
+/* --- Inputs & Labels --- */
 input[type="range"] { width: 150px; }
 label { font-weight: bold; font-size: 12px; }
 
+/* --- Notes --- */
 .user-note { font-size: 12px; margin-top: 20px; }
 </style>
+
 
 <body>
 <div class="app-title">Avocado Ibuprofen Paint</div>
@@ -181,7 +229,8 @@ label { font-weight: bold; font-size: 12px; }
       <div class="actions">
         <button onclick="undo()">Undo (u)</button>
         <button onclick="clearCanvas()">Clear (backspace)</button>
-        <button onclick="importImage()">Import</button>
+        <button onclick="toggleCanvasSize()">Resize Canvas</button>
+        <button onclick="importImage()">Import Image</button>
         <button onclick="invertAndThreshold()">Invert + Threshold (i)</button>
         <button onclick="rotateCanvas()">Rotate (r)</button>
         <input type="file" id="imageInput" accept="image/*" style="display: none;" />
@@ -1285,9 +1334,9 @@ function Nietzsche(x, y) {
 
   // make spacing scale with brush size
   const spacing = Math.max(4, currentBrushSize * 2);
-  pctx.fillStyle = "#fff";
-  pctx.fillRect(0, 0, size, size);
-  pctx.strokeStyle = "#000";
+
+  // transparent background (no white fillRect)
+  pctx.strokeStyle = currentColor; // use the global brush color
   pctx.lineWidth = Math.max(1, currentBrushSize * 0.2);
 
   // draw diagonals for chain-link pattern
@@ -1314,25 +1363,57 @@ function Nietzsche(x, y) {
   ctx.restore();
 }
 
-function rotateCanvas() {
-  saveState(); // allow undo
+const ORIGINAL_WIDTH = canvas.width;
+const ORIGINAL_HEIGHT = canvas.height;
 
-  // Create a temporary canvas to hold current content
-  const tempCanvas = document.createElement("canvas");
-  const tempCtx = tempCanvas.getContext("2d");
-  tempCanvas.width = canvas.width;
-  tempCanvas.height = canvas.height;
+// The "display scale" determines how big the canvas appears on screen
+let displayScale = 1;
+let currentCanvasSize = 'large'; // track current size
 
-  tempCtx.drawImage(canvas, 0, 0);
+function toggleCanvasSize() {
+    const canvas = document.getElementById("canvas");
+    const container = document.querySelector(".canvas-container");
 
-  // Clear and rotate
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(canvas.width / 2, canvas.height / 2);
-  ctx.rotate(Math.PI / 2); // 90 degrees clockwise
-  ctx.drawImage(tempCanvas, -canvas.height / 2, -canvas.width / 2);
-  ctx.restore();
+    // Toggle size
+    const targetSize = currentCanvasSize === 'large' ? 540 : 1080;
+    currentCanvasSize = currentCanvasSize === 'large' ? 'small' : 'large';
+
+    // Save current drawing
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Resize main canvas
+    canvas.width = targetSize;
+    canvas.height = targetSize;
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, targetSize, targetSize);
+
+    // Draw saved image scaled
+    ctx.drawImage(tempCanvas, 0, 0, targetSize, targetSize);
+
+    // Apply threshold for crisp pixels
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        const gray = data[i] * 0.3 + data[i+1] * 0.6 + data[i+2] * 0.1;
+        const bw = gray > 127 ? 255 : 0;
+        data[i] = data[i+1] = data[i+2] = bw;
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Update container size
+    container.style.width = targetSize + "px";
+    container.style.height = targetSize + "px";
 }
+
+
+// expose to HTML
+window.setCanvasSize = setCanvasSize;
 
 updateBrushPreview();
 </script>
